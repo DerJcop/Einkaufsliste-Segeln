@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>⛵ Wochentörn Einkaufsliste</title>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--r0:#1a263c;--r1:#172035;--brd:#334155;--acc:#3b82f6;--txt:#f1f5f9;--mut:#94a3b8;--grn:#22c55e;--red:#f87171;--ice:#38bdf8;--ylw:#fbbf24;--don:#0d2318;--dim:#111827}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh}
+button,input,textarea{font-family:inherit}
+button{cursor:pointer;border:none}
+
+.header{background:var(--card);border-bottom:2px solid var(--brd);position:sticky;top:0;z-index:100;padding:12px 14px}
+.hrow{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.htitle{font-size:18px;font-weight:800;color:#fff}
+.hcrew{font-size:11px;color:var(--mut);margin-top:2px;line-height:1.4}
+.stats{display:flex;gap:10px;font-size:12px;margin-bottom:8px;flex-wrap:wrap}
+.prog-wrap{margin-bottom:10px}
+.prog-bar{background:var(--brd);border-radius:4px;height:7px;overflow:hidden}
+.prog-fill{height:100%;background:var(--grn);transition:width .4s}
+.prog-txt{font-size:11px;color:var(--mut);margin-top:3px}
+.tabs{display:flex;gap:7px}
+.tbtn{flex:1;padding:9px 6px;border-radius:8px;font-size:13px;font-weight:500;background:var(--brd);color:var(--mut)}
+.tbtn.on{background:var(--acc);color:#fff;font-weight:700}
+
+.share{background:#0f2540;border:1px solid var(--acc);border-radius:12px;padding:12px 14px;margin:10px 10px 0}
+.share-label{font-size:13px;font-weight:700;color:#60a5fa;margin-bottom:6px}
+.share-url{background:var(--brd);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--mut);word-break:break-all;margin-bottom:8px;line-height:1.4}
+.copy-btn{background:var(--acc);color:#fff;padding:9px;border-radius:8px;font-size:13px;font-weight:700;width:100%}
+
+.content{padding:10px 10px 60px;max-width:860px;margin:0 auto}
+.frow{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.fbtn{padding:5px 11px;border-radius:20px;font-size:12px;background:var(--brd);color:var(--mut);font-weight:500}
+.fbtn.on{background:var(--acc);color:#fff;font-weight:700}
+
+.cblock{margin-bottom:12px;border-radius:14px;overflow:hidden;border:1px solid var(--brd)}
+.chdr{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;background:var(--card);cursor:pointer;user-select:none}
+.ctitle{font-weight:700;font-size:15px;color:#fff}
+.ccnt{font-size:12px;color:var(--mut)}
+
+.item{border-top:1px solid var(--brd);padding:12px 14px}
+.ihdr{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.iname{font-weight:600;font-size:15px;color:#fff}
+.iname.dim{color:var(--mut)}
+.iname.struck{text-decoration:line-through}
+.irec{font-size:12px;color:var(--mut);margin-top:2px}
+.dlbl{display:flex;align-items:center;gap:6px;flex-shrink:0;padding-top:2px;cursor:pointer}
+.dlbl input{width:18px;height:18px;accent-color:var(--grn);cursor:pointer}
+.dlbl span{font-size:12px;color:var(--mut);font-weight:600}
+.dlbl span.done{color:var(--grn)}
+
+.vbar{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.vdots{display:flex;gap:2px}
+.vdot{width:6px;height:12px;border-radius:2px;background:var(--brd)}
+.vdot.f{background:var(--acc)}
+.vdot.ff{background:var(--grn)}
+.vcnt{font-size:12px;font-weight:700}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.chip{padding:5px 11px;border-radius:20px;font-size:12px;font-weight:500;background:var(--brd);color:var(--mut);min-height:32px}
+.chip.on{background:var(--acc);color:#fff;font-weight:700}
+
+.qsec{background:#0f2540;border:1px solid var(--brd);border-radius:9px;padding:9px 12px;margin-bottom:10px}
+.qlbl{font-size:12px;color:var(--mut);margin-bottom:6px}
+.qhint{color:var(--ylw);font-size:11px}
+.qreset{background:transparent;border:1px solid var(--brd);color:var(--ylw);padding:2px 8px;border-radius:5px;font-size:11px;margin-left:8px}
+.qinput{background:var(--brd);border:1px solid #475569;color:#fff;padding:7px 12px;border-radius:8px;font-size:14px;font-weight:700;width:100%;outline:none}
+
+.nlbl{font-size:12px;color:var(--mut);margin-bottom:4px}
+.ntxt{background:var(--brd);border:1px solid #475569;color:#fff;padding:7px 11px;border-radius:8px;font-size:13px;width:100%;outline:none;resize:vertical;line-height:1.5}
+.ntxt::placeholder{color:var(--mut)}
+
+.shopitem{border-top:1px solid var(--brd);padding:11px 14px;display:flex;align-items:flex-start;gap:10px}
+.shopchk{width:20px;height:20px;accent-color:var(--grn);cursor:pointer;flex-shrink:0;margin-top:2px}
+.shopname{font-size:15px;font-weight:600}
+.shopname.struck{text-decoration:line-through;color:var(--mut)}
+.shopqty{display:inline-block;background:#1e2d45;color:var(--ylw);padding:3px 10px;border-radius:6px;font-size:13px;font-weight:700}
+.shopvotes{font-size:12px;color:var(--mut)}
+.notecall{margin-top:6px;font-size:12px;color:#93c5fd;background:#0f1f35;padding:5px 9px;border-radius:6px;border-left:3px solid var(--acc)}
+
+.bnnr{border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.bnnr-b{background:#071e2e;border:1px solid var(--ice)}
+.bnnr-r{background:#1c0a0a;border:1px solid var(--red)}
+.btitle{font-weight:700;font-size:14px;margin-bottom:6px}
+.bnnr-b .btitle{color:var(--ice)}
+.bnnr-r .btitle{color:var(--red)}
+.bitems{font-size:12px;line-height:1.8}
+.bnnr-b .bitems{color:#7dd3fc}
+.bnnr-r .bitems{color:#fca5a5}
+
+.rfbtn{background:var(--acc);color:#fff;padding:8px 13px;border-radius:9px;font-size:14px;font-weight:700;flex-shrink:0}
+.loading{display:flex;align-items:center;justify-content:center;min-height:100vh;color:var(--mut);font-size:18px;flex-direction:column;gap:12px}
+.spinner{width:32px;height:32px;border:3px solid var(--brd);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.footer{text-align:center;padding:0 0 28px;color:#334155;font-size:12px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const CREW=["jj","naturesmoney","orangy1","soley21","Mate","ewi mei","Andi","raspberry ice","juniormind"];
+const N=CREW.length;
+const API="https://api.jsonstorage.net/v1/json";
+
+const ITEMS=[
+  {id:"g01",cat:"🥤 Getränke",name:"Mineralwasser 7L Flaschen",rec:"15 Flaschen"},
+  {id:"g02",cat:"🥤 Getränke",name:"Mineralwasser 1,5L sprudelnd",rec:"6 Flaschen"},
+  {id:"g03",cat:"🥤 Getränke",name:"Säfte (Apfel, Orange, Traube)",rec:"6 Liter"},
+  {id:"g04",cat:"🥤 Getränke",name:"Cola (Dosen)",rec:"36 Dosen"},
+  {id:"g05",cat:"🥤 Getränke",name:"Cola light (Dosen)",rec:"18 Dosen"},
+  {id:"g06",cat:"🥤 Getränke",name:"Tonicwater (Dosen)",rec:"15 Dosen"},
+  {id:"g07",cat:"🥤 Getränke",name:"Sprite (Dosen)",rec:"18 Dosen"},
+  {id:"g08",cat:"🥤 Getränke",name:"Bier (Dosen)",rec:"50 Dosen",k:1},
+  {id:"g09",cat:"🥤 Getränke",name:"Radler (Dosen)",rec:"30 Dosen",k:1},
+  {id:"g10",cat:"🥤 Getränke",name:"Wein weiß/rot",rec:"4 Liter",k:1},
+  {id:"g11",cat:"🥤 Getränke",name:"Spirituosen (Gin, Wodka, Rum, Baileys ...)",rec:"4 Liter"},
+  {id:"g12",cat:"🥤 Getränke",name:"Gemahlener Kaffee",rec:"500g"},
+  {id:"g13",cat:"🥤 Getränke",name:"Espressopulver",rec:"500g"},
+  {id:"g14",cat:"🥤 Getränke",name:"Kaffeefilter",rec:"1 Packung"},
+  {id:"g15",cat:"🥤 Getränke",name:"Löslicher Kaffee f. Frappe",rec:"1 Packung"},
+  {id:"g16",cat:"🥤 Getränke",name:"Tee (schwarz / Pfefferminz)",rec:"2 Packungen"},
+  {id:"m01",cat:"🧀 Molkereiprodukte",name:"Käseaufschnitt",rec:"1500g",k:1},
+  {id:"m02",cat:"🧀 Molkereiprodukte",name:"Käse am Stück",rec:"250g",k:1},
+  {id:"m03",cat:"🧀 Molkereiprodukte",name:"Quark",rec:"1000g",k:1},
+  {id:"m04",cat:"🧀 Molkereiprodukte",name:"Fetakäse f. Salat",rec:"1000g",k:1},
+  {id:"m05",cat:"🧀 Molkereiprodukte",name:"Philadelphia",rec:"500g",k:1},
+  {id:"m06",cat:"🧀 Molkereiprodukte",name:"Butter (harte Verpackung)",rec:"1 Stk",k:1},
+  {id:"m07",cat:"🧀 Molkereiprodukte",name:"Eier",rec:"40 Stk",k:1},
+  {id:"m08",cat:"🧀 Molkereiprodukte",name:"Milch haltbar",rec:"2 Liter"},
+  {id:"m09",cat:"🧀 Molkereiprodukte",name:"Joghurt (versch. Fettstufen) groß",rec:"4000g",k:1},
+  {id:"f01",cat:"🥩 Fleisch & Wurstwaren",name:"Fisch",rec:"1000g",k:1},
+  {id:"f02",cat:"🥩 Fleisch & Wurstwaren",name:"Hähnchen",rec:"1000g",k:1},
+  {id:"f03",cat:"🥩 Fleisch & Wurstwaren",name:"Rindfleisch",rec:"1000g",k:1},
+  {id:"f04",cat:"🥩 Fleisch & Wurstwaren",name:"Salami, Schinken, Putenwurst, Speck",rec:"1500g",k:1},
+  {id:"b01",cat:"🍞 Brot, Müsli & Snacks",name:"Frisches Brot",rec:"3 Stk"},
+  {id:"b02",cat:"🍞 Brot, Müsli & Snacks",name:"Baguette",rec:"3 Stk"},
+  {id:"b03",cat:"🍞 Brot, Müsli & Snacks",name:"Aufbackbrot & Brötchen",rec:"5 Packungen"},
+  {id:"b04",cat:"🍞 Brot, Müsli & Snacks",name:"Toastbrot",rec:"1 Packung"},
+  {id:"b05",cat:"🍞 Brot, Müsli & Snacks",name:"Müsli (Früchte/Nüsse)",rec:"1000g"},
+  {id:"b06",cat:"🍞 Brot, Müsli & Snacks",name:"Zwieback & Knäckebrot",rec:"1 Packung"},
+  {id:"b07",cat:"🍞 Brot, Müsli & Snacks",name:"Backpulver",rec:"1 Päckchen"},
+  {id:"b08",cat:"🍞 Brot, Müsli & Snacks",name:"Haferflocken",rec:"500g"},
+  {id:"b09",cat:"🍞 Brot, Müsli & Snacks",name:"Cornflakes",rec:"1000g"},
+  {id:"b10",cat:"🍞 Brot, Müsli & Snacks",name:"Cashews, Mandeln, Pistazien, Erdnüsse",rec:"2000g"},
+  {id:"b11",cat:"🍞 Brot, Müsli & Snacks",name:"Chips, Nachos + Dip",rec:"1000g"},
+  {id:"b12",cat:"🍞 Brot, Müsli & Snacks",name:"Cookies",rec:"1000g"},
+  {id:"b13",cat:"🍞 Brot, Müsli & Snacks",name:"Tafelschokolade",rec:"6 Tafeln"},
+  {id:"h01",cat:"🍝 Pasta, Reis & Co.",name:"Spaghetti / Penne",rec:"2000g"},
+  {id:"h02",cat:"🍝 Pasta, Reis & Co.",name:"Kartoffeln",rec:"5000g"},
+  {id:"h03",cat:"🍝 Pasta, Reis & Co.",name:"Reis",rec:"500g"},
+  {id:"h04",cat:"🍝 Pasta, Reis & Co.",name:"Couscous",rec:"500g"},
+  {id:"h05",cat:"🍝 Pasta, Reis & Co.",name:"Mehl (Pfannkuchen)",rec:"1000g"},
+  {id:"k01",cat:"🥫 Konserven",name:"Tomaten in der Dose",rec:"4000g"},
+  {id:"k02",cat:"🥫 Konserven",name:"Mais",rec:"3 Dosen"},
+  {id:"k03",cat:"🥫 Konserven",name:"Thunfisch",rec:"4 Dosen"},
+  {id:"k04",cat:"🥫 Konserven",name:"Bohnen",rec:"4 Dosen"},
+  {id:"k05",cat:"🥫 Konserven",name:"Honig",rec:"1 Stk"},
+  {id:"k06",cat:"🥫 Konserven",name:"Nutella",rec:"1 Stk"},
+  {id:"k07",cat:"🥫 Konserven",name:"Marmelade",rec:"2 Stk"},
+  {id:"v01",cat:"🥬 Gemüse",name:"Tomaten",rec:"2000g",k:1},
+  {id:"v02",cat:"🥬 Gemüse",name:"Gurken",rec:"2000g",k:1},
+  {id:"v03",cat:"🥬 Gemüse",name:"Salat",rec:"3 Köpfe",k:1},
+  {id:"v04",cat:"🥬 Gemüse",name:"Paprika",rec:"2000g",k:1},
+  {id:"v05",cat:"🥬 Gemüse",name:"Karotten",rec:"2000g"},
+  {id:"v06",cat:"🥬 Gemüse",name:"Zwiebeln (rot + weiß)",rec:"2000g"},
+  {id:"v07",cat:"🥬 Gemüse",name:"Knoblauch",rec:"2 Knollen"},
+  {id:"v08",cat:"🥬 Gemüse",name:"Kürbis",rec:"1 Stk"},
+  {id:"v09",cat:"🥬 Gemüse",name:"Zucchini & Aubergine",rec:"2000g"},
+  {id:"o01",cat:"🍎 Obst",name:"Äpfel",rec:"4000g"},
+  {id:"o02",cat:"🍎 Obst",name:"Bananen",rec:"2000g"},
+  {id:"o03",cat:"🍎 Obst",name:"Trauben",rec:"2000g",k:1},
+  {id:"o04",cat:"🍎 Obst",name:"Orangen",rec:"2000g"},
+  {id:"o05",cat:"🍎 Obst",name:"Zitronen",rec:"500g"},
+  {id:"o06",cat:"🍎 Obst",name:"Limetten",rec:"500g"},
+  {id:"o07",cat:"🍎 Obst",name:"Melone",rec:"1 Stk",k:1},
+  {id:"o08",cat:"🍎 Obst",name:"Avocados (4 reif, Rest hart)",rec:"7 Stk",k:1},
+  {id:"t01",cat:"🧹 Küche & Toilette",name:"Küchenpapier",rec:"4 Rollen"},
+  {id:"t02",cat:"🧹 Küche & Toilette",name:"Toilettenpapier",rec:"8 Rollen"},
+  {id:"t03",cat:"🧹 Küche & Toilette",name:"Flüssigseife",rec:"2 Flaschen"},
+  {id:"t04",cat:"🧹 Küche & Toilette",name:"Geschirrtücher",rec:"4 Stk"},
+  {id:"t05",cat:"🧹 Küche & Toilette",name:"Geschirrschwamm",rec:"2 Stk"},
+  {id:"t06",cat:"🧹 Küche & Toilette",name:"Topfschrubber",rec:"1 Stk"},
+  {id:"t07",cat:"🧹 Küche & Toilette",name:"Müllsäcke groß",rec:"1 Rolle"},
+  {id:"t08",cat:"🧹 Küche & Toilette",name:"Müllsäcke klein",rec:"1 Rolle"},
+  {id:"t09",cat:"🧹 Küche & Toilette",name:"Spülmittel (biologisch abbaubar)",rec:"1 Flasche"},
+  {id:"t10",cat:"🧹 Küche & Toilette",name:"Küchenfeuerzeug (lang)",rec:"1 Stk"},
+  {id:"t11",cat:"🧹 Küche & Toilette",name:"Streichhölzer",rec:"1 Packung"},
+  {id:"t12",cat:"🧹 Küche & Toilette",name:"Backpapier",rec:"1 Rolle"},
+  {id:"t13",cat:"🧹 Küche & Toilette",name:"Alufolie",rec:"1 Rolle"},
+  {id:"oe01",cat:"🫙 Öl & Gewürze",name:"Sonnenblumenöl",rec:"1 Liter"},
+  {id:"oe02",cat:"🫙 Öl & Gewürze",name:"Olivenöl",rec:"1 Liter"},
+  {id:"oe03",cat:"🫙 Öl & Gewürze",name:"Ketchup",rec:"1 Flasche"},
+  {id:"oe04",cat:"🫙 Öl & Gewürze",name:"Senf",rec:"1 Flasche"},
+  {id:"oe05",cat:"🫙 Öl & Gewürze",name:"Meersalz",rec:"250g"},
+  {id:"oe06",cat:"🫙 Öl & Gewürze",name:"Zucker",rec:"500g"},
+  {id:"oe07",cat:"🫙 Öl & Gewürze",name:"Gemüsebrühe",rec:"250g"},
+  {id:"oe08",cat:"🫙 Öl & Gewürze",name:"Pfeffer (als Mühle)",rec:"1 Stk"},
+  {id:"oe09",cat:"🫙 Öl & Gewürze",name:"Chilli / Paprikapulver",rec:"nach Bedarf"},
+  {id:"oe10",cat:"🫙 Öl & Gewürze",name:"Kümmel & Currypulver",rec:"nach Bedarf"},
+  {id:"oe11",cat:"🫙 Öl & Gewürze",name:"Oregano, Thymian, Rosmarin",rec:"nach Bedarf"},
+  {id:"oe12",cat:"🫙 Öl & Gewürze",name:"Dill & Schnittlauch",rec:"nach Bedarf"},
+  {id:"s01",cat:"⚓ Sonstiges",name:"Eiswürfel",rec:"nach Kapazität",k:1},
+  {id:"s02",cat:"⚓ Sonstiges",name:"Gemütliches Licht / LED Lampe",rec:"1 Stk"},
+  {id:"s03",cat:"⚓ Sonstiges",name:"Tupperdosen",rec:"3 Stk"},
+  {id:"s04",cat:"⚓ Sonstiges",name:"Wäscheklammern",rec:"1 Packung"},
+  {id:"s05",cat:"⚓ Sonstiges",name:"Troesteli fuer den ersten Seekranken",rec:"1 Stk"},
+  {id:"s06",cat:"⚓ Sonstiges",name:"Bluetooth-Musikbox",rec:"1 Stk"},
+];
+
+const CATS=[...new Set(ITEMS.map(i=>i.cat))];
+let blobId=null,state={},tab="vote",filter="all",openCats=new Set(CATS),lastSaved=null,saving=false,saveTimer=null;
+
+function defState(){const s={};ITEMS.forEach(it=>{s[it.id]={votes:[],buyAmount:it.rec,custom:false,done:false,note:""};});return s;}
+
+function tmo(p,ms){return Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error("timeout")),ms))]);}
+function getUri(){try{return atob(location.hash.slice(1));}catch{return null;}}
+function setUri(u){location.hash=btoa(u);}
+
+function estQty(rec,v){
+  if(v===0)return rec;
+  const c=rec.replace(/^ca\.\s*/i,"");
+  const rm=c.match(/^(\d+(?:[.,]\d+)?)\s*[-–]\s*(\d+(?:[.,]\d+)?)\s*(.*)/);
+  if(rm){const h=parseFloat(rm[2].replace(",","."));const u=rm[3].trim();return Math.max(1,Math.ceil(h*v/N))+(u?" "+u:"");}
+  const sm=c.match(/^(\d+(?:[.,]\d+)?)\s*(.*)/);
+  if(sm){const n=parseFloat(sm[1].replace(",","."));const u=sm[2].trim();return Math.max(1,Math.ceil(n*v/N))+(u?" "+u:"");}
+  return rec;
+}
+
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+async function createBlob(){
+  const r=await tmo(fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(defState())}),8000);
+  const d=await r.json();return d.uri;
+}
+async function loadBlob(uri){const r=await tmo(fetch(uri),8000);if(!r.ok)throw new Error();return r.json();}
+async function saveBlob(uri,d){await fetch(uri,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)});}
+
+function schedSave(){
+  if(saveTimer)clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    saving=true;renderSaveStatus();
+    try{await saveBlob(getUri(),state);lastSaved=new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});}catch(e){}
+    saving=false;renderSaveStatus();
+  },900);
+}
+
+function renderSaveStatus(){
+  const el=document.getElementById("savestatus");
+  if(el)el.textContent=saving?"💾 …":lastSaved?"✓ "+lastSaved:"";
+}
+
+async function init(){
+  show('<div class="loading"><div class="spinner"></div>⚓ Starte Liste…</div>');
+  const uri=getUri();
+  if(uri){
+    try{const d=await loadBlob(uri);state={...defState(),...d};}
+    catch(e){
+      show('<div class="loading" style="flex-direction:column;gap:16px;text-align:center;padding:20px"><div>⚠️ Liste konnte nicht geladen werden</div><button onclick="init()" style="background:#3b82f6;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;border:none;cursor:pointer">🔄 Erneut versuchen</button></div>');
+      return;
+    }
+  } else {
+    show('<div class="loading"><div class="spinner"></div>Erstelle neue Liste…</div>');
+    try{const uri=await createBlob();setUri(uri);state=defState();}
+    catch(e){
+      show('<div class="loading" style="flex-direction:column;gap:16px;text-align:center;padding:20px"><div>⚠️ Keine Verbindung — bitte Internetverbindung prüfen</div><button onclick="init()" style="background:#3b82f6;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;border:none;cursor:pointer">🔄 Erneut versuchen</button></div>');
+      return;
+    }
+  }
+  render();
+}
+
+async function refresh(){
+  saving=true;renderSaveStatus();
+  try{const d=await loadBlob(getUri());state={...defState(),...d};lastSaved=new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});}
+  catch(e){}
+  saving=false;render();
+}
+
+function toggleVote(id,c){
+  const s=state[id];const has=s.votes.includes(c);
+  s.votes=has?s.votes.filter(v=>v!==c):[...s.votes,c];
+  if(!s.custom){const it=ITEMS.find(i=>i.id===id);s.buyAmount=estQty(it.rec,s.votes.length);}
+  schedSave();render();
+}
+function toggleDone(id){state[id].done=!state[id].done;schedSave();render();}
+function setBuy(id,val){state[id].buyAmount=val;state[id].custom=true;schedSave();}
+function resetBuy(id){const it=ITEMS.find(i=>i.id===id);state[id].buyAmount=estQty(it.rec,state[id].votes.length);state[id].custom=false;schedSave();render();}
+function setNote(id,val){state[id].note=val;schedSave();}
+function togCat(cat){openCats.has(cat)?openCats.delete(cat):openCats.add(cat);render();}
+
+function copyLink(){
+  const url=location.href;
+  if(navigator.clipboard){navigator.clipboard.writeText(url).then(()=>{const b=document.getElementById("copybtn");if(b){b.textContent="✓ Kopiert!";setTimeout(()=>b.textContent="🔗 Link kopieren",2000);}});}
+  else{const t=document.createElement("textarea");t.value=url;document.body.appendChild(t);t.select();document.execCommand("copy");document.body.removeChild(t);}
+}
+
+function show(h){document.getElementById("app").innerHTML=h;}
+
+function render(){
+  const voted=ITEMS.filter(i=>state[i.id].votes.length>0);
+  const noVote=ITEMS.filter(i=>state[i.id].votes.length===0);
+  const kv=voted.filter(i=>i.k);
+  const sdone=voted.filter(i=>state[i.id].done).length;
+  const pct=voted.length?Math.round(sdone/voted.length*100):0;
+  const url=esc(location.href);
+
+  let h=`<div class="header">
+    <div class="hrow">
+      <div><div class="htitle">⛵ Wochentörn Einkaufsliste</div>
+      <div class="hcrew">7 Tage · 9 Mann · ${CREW.join(", ")}</div></div>
+      <button class="rfbtn" onclick="refresh()">🔄</button>
+    </div>
+    <div class="stats">
+      <span style="color:var(--grn);font-weight:600">✅ ${voted.length}/${ITEMS.length} gewünscht</span>
+      <span style="color:var(--red);font-weight:600">✕ ${noVote.length} keiner will</span>
+      <span style="color:var(--ice);font-weight:600">❄️ ${kv.length} Kühlposten</span>
+      <span id="savestatus" style="margin-left:auto;color:var(--mut);font-size:11px">${saving?"💾 …":lastSaved?"✓ "+lastSaved:""}</span>
+    </div>
+    ${voted.length?`<div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div><div class="prog-txt">Einkauf: ${sdone}/${voted.length} erledigt (${pct}%)</div></div>`:""}
+    <div class="tabs">
+      <button class="tbtn ${tab==="vote"?"on":""}" onclick="tab='vote';render()">🗳️ Abstimmung</button>
+      <button class="tbtn ${tab==="shop"?"on":""}" onclick="tab='shop';render()">🛒 Einkaufen (${voted.length})</button>
+    </div>
+  </div>
+  <div style="padding:10px 10px 0">
+    <div class="share">
+      <div class="share-label">🔗 Link für die Crew — einfach teilen</div>
+      <div class="share-url">${url}</div>
+      <button class="copy-btn" id="copybtn" onclick="copyLink()">🔗 Link kopieren</button>
+    </div>
+  </div>
+  <div class="content">`;
+
+  if(tab==="vote"){
+    h+=`<div class="frow">
+      <button class="fbtn ${filter==="all"?"on":""}" onclick="filter='all';render()">Alle (${ITEMS.length})</button>
+      <button class="fbtn ${filter==="wanted"?"on":""}" onclick="filter='wanted';render()">✓ Gewünscht (${voted.length})</button>
+      <button class="fbtn ${filter==="unwanted"?"on":""}" onclick="filter='unwanted';render()">✕ Keiner will (${noVote.length})</button>
+    </div>`;
+
+    CATS.forEach(cat=>{
+      let items=ITEMS.filter(i=>i.cat===cat);
+      if(filter==="wanted")items=items.filter(i=>state[i.id].votes.length>0);
+      if(filter==="unwanted")items=items.filter(i=>state[i.id].votes.length===0);
+      if(!items.length)return;
+      const isOpen=openCats.has(cat);
+      const wn=items.filter(i=>state[i.id].votes.length>0).length;
+      h+=`<div class="cblock">
+        <div class="chdr" onclick="togCat('${esc(cat)}')">
+          <span class="ctitle">${esc(cat)}</span>
+          <div style="display:flex;gap:10px;align-items:center"><span class="ccnt">${wn}/${items.length}</span><span style="color:var(--mut)">${isOpen?"▲":"▼"}</span></div>
+        </div>`;
+      if(isOpen){
+        items.forEach((item,idx)=>{
+          const s=state[item.id];const vn=s.votes.length;
+          const it=ITEMS.find(i=>i.id===item.id);
+          const ae=estQty(it.rec,vn);const canScale=ae!==it.rec;
+          const bg=s.done?"var(--don)":vn===0?"var(--dim)":idx%2===0?"var(--r0)":"var(--r1)";
+          const op=vn===0&&!s.done?".55":s.done?".65":"1";
+          let dots="<div class='vdots'>";
+          for(let i=0;i<N;i++)dots+=`<div class="vdot${i<vn?(vn===N?" ff":" f"):""}"></div>`;
+          dots+="</div>";
+          const vcol=vn===0?"var(--red)":vn===N?"var(--grn)":"var(--ylw)";
+          let chips="<div class='chips'>";
+          CREW.forEach(c=>{const on=s.votes.includes(c);chips+=`<button class="chip ${on?"on":""}" onclick="toggleVote('${item.id}','${esc(c)}')">${esc(c)}</button>`;});
+          chips+="</div>";
+          h+=`<div class="item" style="background:${bg};opacity:${op}">
+            <div class="ihdr">
+              <div>
+                <div class="iname${vn===0?" dim":""}${s.done?" struck":""}">${esc(item.name)}${item.k?" ❄️":""}</div>
+                <div class="irec">Empfohlen: ${esc(it.rec)}</div>
+              </div>
+              <label class="dlbl"><input type="checkbox"${s.done?" checked":""} onchange="toggleDone('${item.id}')"><span class="${s.done?"done":""}">${s.done?"✓ Erledigt":"Erledigt"}</span></label>
+            </div>
+            <div class="vbar">${dots}<span class="vcnt" style="color:${vcol}">${vn}/${N}</span></div>
+            ${chips}
+            ${vn>0?`<div class="qsec">
+              <div class="qlbl">Zu kaufen${canScale?` <span class="qhint">· auto-skaliert ${vn}/${N} Stimmen</span>`:""}${s.custom?` <button class="qreset" onclick="resetBuy('${item.id}')">↺ Reset</button>`:""}</div>
+              <input class="qinput" value="${esc(s.buyAmount)}" oninput="setBuy('${item.id}',this.value)">
+            </div>`:""}
+            <div>
+              <div class="nlbl">📝 Notiz (für alle sichtbar)</div>
+              <textarea class="ntxt" rows="2" placeholder="z.B. weiß oder rot? · wer bringt mit? · Marke beachten ..." oninput="setNote('${item.id}',this.value)">${esc(s.note)}</textarea>
+            </div>
+          </div>`;
+        });
+      }
+      h+="</div>";
+    });
+
+  } else {
+    if(!voted.length){
+      h+=`<div style="text-align:center;padding:60px 20px;color:var(--mut)"><div style="font-size:36px;margin-bottom:12px">🗳️</div><div style="font-size:16px;font-weight:600;color:var(--txt)">Noch keine Abstimmungen</div><div style="font-size:13px;margin-top:6px">Im Abstimmungs-Tab Namenskürzel eintragen!</div></div>`;
+    } else {
+      if(kv.length){h+=`<div class="bnnr bnnr-b"><div class="btitle">❄️ ${kv.length} Kühlschrankposten — Platz einplanen!</div><div class="bitems">${kv.map(i=>esc(i.name)).join(" · ")}</div></div>`;}
+      if(noVote.length){h+=`<div class="bnnr bnnr-r"><div class="btitle">✕ ${noVote.length} Artikel — niemand gewählt, nicht kaufen</div><div class="bitems">${noVote.map(i=>esc(i.name)).join(" · ")}</div></div>`;}
+      CATS.forEach(cat=>{
+        const items=ITEMS.filter(i=>i.cat===cat&&state[i.id].votes.length>0);
+        if(!items.length)return;
+        const cd=items.filter(i=>state[i.id].done).length;
+        h+=`<div class="cblock"><div class="chdr" style="cursor:default"><span class="ctitle">${esc(cat)}</span><span style="font-size:12px;color:${cd===items.length?"var(--grn)":"var(--mut)"}">${cd}/${items.length} ✓</span></div>`;
+        items.forEach((item,idx)=>{
+          const s=state[item.id];const bg=s.done?"var(--don)":idx%2===0?"var(--r0)":"var(--r1)";
+          h+=`<div class="shopitem" style="background:${bg};opacity:${s.done?.5:1}">
+            <input type="checkbox" class="shopchk"${s.done?" checked":""} onchange="toggleDone('${item.id}')">
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap">
+                <span class="shopname${s.done?" struck":""}">${esc(item.name)}${item.k?" ❄️":""}</span>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <span class="shopqty">${esc(s.buyAmount)}</span>
+                <span class="shopvotes">${s.votes.length}/${N} Stimmen</span>
+              </div>
+              ${s.note?`<div class="notecall">📝 ${esc(s.note)}</div>`:""}
+            </div>
+          </div>`;
+        });
+        h+="</div>";
+      });
+    }
+  }
+
+  h+=`</div><div class="footer">Alle Änderungen für die ganze Crew gespeichert · 🔄 für neuesten Stand</div>`;
+  show(h);
+}
+
+init();
+</script>
+</body>
+</html>
