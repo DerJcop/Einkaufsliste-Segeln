@@ -245,8 +245,10 @@ async function createBlob(){
   const d=await r.json();return d.metadata.id;
 }
 async function loadBlob(id){
-  const r=await tmo(fetch(API+"/"+id+"/latest",{headers:{"X-Master-Key":JBKEY}}),8000);
-  if(!r.ok)throw new Error();const d=await r.json();return d.record;
+  const r=await tmo(fetch(API+"/"+id+"/latest",{headers:{"X-Master-Key":JBKEY,"X-Bin-Meta":"false"}}),8000);
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  const d=await r.json();
+  return d.record !== undefined ? d.record : d;
 }
 async function saveBlob(id,d){
   await fetch(API+"/"+id,{method:"PUT",headers:{"Content-Type":"application/json","X-Master-Key":JBKEY},body:JSON.stringify(d)});
@@ -268,17 +270,29 @@ function renderSaveStatus(){
 
 async function init(){
   show('<div class="loading"><div class="spinner"></div>⚓ Starte Liste…</div>');
-  const uri=getUri();
-  if(uri){
-    try{const d=await loadBlob(uri);state={...defState(),...d};}
-    catch(e){
-      show('<div class="loading" style="flex-direction:column;gap:16px;text-align:center;padding:20px"><div>⚠️ Liste konnte nicht geladen werden</div><button onclick="init()" style="background:#3b82f6;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;border:none;cursor:pointer">🔄 Erneut versuchen</button></div>');
-      return;
+  const id=getUri();
+  if(id){
+    try{
+      const d=await loadBlob(id);
+      state={...defState(),...d};
+    } catch(e){
+      // Bin existiert nicht mehr — neue erstellen, gleiche URL überschreiben
+      try{
+        const newId=await createBlob();
+        setUri(newId);
+        state=defState();
+      } catch(e2){
+        show('<div class="loading" style="flex-direction:column;gap:16px;text-align:center;padding:20px"><div>⚠️ Keine Verbindung — bitte Internetverbindung prüfen</div><button onclick="init()" style="background:#3b82f6;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;border:none;cursor:pointer">🔄 Erneut versuchen</button></div>');
+        return;
+      }
     }
   } else {
     show('<div class="loading"><div class="spinner"></div>Erstelle neue Liste…</div>');
-    try{const uri=await createBlob();setUri(uri);state=defState();}
-    catch(e){
+    try{
+      const newId=await createBlob();
+      setUri(newId);
+      state=defState();
+    } catch(e){
       show('<div class="loading" style="flex-direction:column;gap:16px;text-align:center;padding:20px"><div>⚠️ Keine Verbindung — bitte Internetverbindung prüfen</div><button onclick="init()" style="background:#3b82f6;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;border:none;cursor:pointer">🔄 Erneut versuchen</button></div>');
       return;
     }
